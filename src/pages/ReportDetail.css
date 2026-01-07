@@ -65,7 +65,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: rgba(30, 41, 59, 0.6);
+    background: var(--surface-color);
     padding: 1rem;
     border-radius: 0.5rem;
     margin-bottom: 1rem;
@@ -102,11 +102,12 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(15, 23, 42, 0.6);
+    background: transparent;
     padding: 0.25rem 0.5rem;
     border-radius: 2rem;
     border: 1px solid var(--glass-border);
     margin: 1rem 0;
+    width: fit-content;
 }
 
 .vote-btn {
@@ -147,4 +148,17 @@
     text-align: center;
     font-size: 0.9rem;
     color: var(--text-primary);
+}
+
+.btn-text {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+    display: inline-block;
+}
+
+.btn-text:hover {
+    text-decoration: underline;
 }

@@ -24,6 +24,7 @@ const ReportEditor = () => {
     const [status, setStatus] = useState('New'); // New | Saved | Saving… | Unsaved
     const [drafts, setDrafts] = useState([]);
     const [showDraftsPanel, setShowDraftsPanel] = useState(false);
+    const [showSubmitModal, setShowSubmitModal] = useState(false);
     const [currentDraftId, setCurrentDraftId] = useState(null);
     const [attachments, setAttachments] = useState([]); // [{id, name, type, data}]
     const editorRef = useRef(null);
@@ -43,6 +44,28 @@ const ReportEditor = () => {
             }
         }
     }, [address]);
+
+    // Keyboard Shortcut for Save (Ctrl+S / Cmd+S)
+    const saveCurrentDraftRef = useRef(null);
+
+    // Update ref on every render so the event listener always calls the latest version
+    useEffect(() => {
+        saveCurrentDraftRef.current = saveCurrentDraft;
+    });
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (saveCurrentDraftRef.current) {
+                    saveCurrentDraftRef.current();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Persist drafts to storage
     const persistDrafts = (updatedDrafts) => {
@@ -188,6 +211,7 @@ const ReportEditor = () => {
     };
 
     const handleSubmit = async () => {
+        // Validation before modal
         if (!address) {
             alert('Connect your wallet first.');
             return;
@@ -198,6 +222,15 @@ const ReportEditor = () => {
             alert("Report is empty.");
             return;
         }
+
+        setShowSubmitModal(true);
+    };
+
+    const executeSubmit = async () => {
+        setShowSubmitModal(false);
+        if (!address) return;
+
+        const content = editorRef.current?.innerHTML || '';
 
         setStatus('Saving…');
 
@@ -369,42 +402,138 @@ const ReportEditor = () => {
                             )}
                         </div>
 
-                        <button className="btn btn-outline" onClick={saveCurrentDraft}>Save Draft</button>
-                        <button className="btn btn-primary" onClick={handleSubmit}>Submit Report</button>
+
+                        <button className="btn btn-primary" onClick={() => setShowSubmitModal(true)}>Submit Report</button>
                     </div>
                 </div>
 
-                {/* Toolbar */}
-                <div className="toolbar">
-                    <button className="tool-btn" title="Bold" onClick={() => execCommand('bold')}><strong>B</strong></button>
-                    <button className="tool-btn" title="Italic" onClick={() => execCommand('italic')}><em>I</em></button>
-                    <button className="tool-btn" title="Underline" onClick={() => execCommand('underline')}><u>U</u></button>
-                    <button className="tool-btn" title="Link" onClick={() => {
-                        const url = prompt('Enter URL');
-                        if (url) execCommand('createLink', url);
-                    }}>🔗</button>
-                    <div className="divider"></div>
-                    <button className="tool-btn" title="Attach File" onClick={() => fileInputRef.current.click()}>
-                        📎 <span style={{ fontSize: '0.8rem', marginLeft: '0.2rem' }}>Attach</span>
-                    </button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        style={{ display: 'none' }}
-                        accept="image/*,application/pdf"
-                        multiple
+                {/* Info Header */}
+                <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '0.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🧅</span>
+                    <div>
+                        <h4 style={{ margin: '0 0 0.25rem 0', color: 'var(--text-primary)', fontSize: '1rem' }}>Anonymity Recommendation</h4>
+                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                            For true anonymity, we strongly recommend using the Tor Browser or a reliable VPN. This masks your IP address from your ISP and prevents network surveillance, ensuring your submission remains untraceable.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Editor Card */}
+                <div className="editor-wrapper glass-panel">
+                    {/* Toolbar */}
+                    <div className="toolbar">
+                        {/* Font Controls */}
+                        <div className="toolbar-group">
+                            <select
+                                className="toolbar-select font-family"
+                                onChange={(e) => execCommand('fontName', e.target.value)}
+                                defaultValue="Inter"
+                            >
+                                <option value="Inter">Inter</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Courier New">Monospace</option>
+                            </select>
+                            <select
+                                className="toolbar-select font-size"
+                                onChange={(e) => execCommand('fontSize', e.target.value)}
+                                defaultValue="3"
+                            >
+                                <option value="1">Small</option>
+                                <option value="3">Normal</option>
+                                <option value="5">Large</option>
+                                <option value="7">Huge</option>
+                            </select>
+                        </div>
+
+                        <div className="divider"></div>
+
+                        {/* Format: B I U */}
+                        <div className="toolbar-group">
+                            <button className="tool-btn" title="Bold" onClick={() => execCommand('bold')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>
+                            </button>
+                            <button className="tool-btn" title="Italic" onClick={() => execCommand('italic')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="4" x2="10" y2="4"></line><line x1="14" y1="20" x2="5" y2="20"></line><line x1="15" y1="4" x2="9" y2="20"></line></svg>
+                            </button>
+                            <button className="tool-btn" title="Underline" onClick={() => execCommand('underline')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path><line x1="4" y1="21" x2="20" y2="21"></line></svg>
+                            </button>
+                        </div>
+
+                        {/* Color Picker */}
+                        <div className="toolbar-group">
+                            <label className="color-picker-wrapper" title="Text Color">
+                                <input
+                                    type="color"
+                                    onChange={(e) => execCommand('foreColor', e.target.value)}
+                                    defaultValue="#e2e8f0"
+                                />
+                                <div className="color-circle"></div>
+                            </label>
+                        </div>
+
+                        <div className="divider"></div>
+
+                        {/* Alignment */}
+                        <div className="toolbar-group">
+                            <button className="tool-btn" title="Align Left" onClick={() => execCommand('justifyLeft')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>
+                            </button>
+                            <button className="tool-btn" title="Align Center" onClick={() => execCommand('justifyCenter')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="10" x2="6" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="18" y1="18" x2="6" y2="18"></line></svg>
+                            </button>
+                            <button className="tool-btn" title="Align Right" onClick={() => execCommand('justifyRight')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>
+                            </button>
+                        </div>
+
+                        {/* Lists */}
+                        <div className="toolbar-group">
+                            <button className="tool-btn" title="Bullet List" onClick={() => execCommand('insertUnorderedList')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            </button>
+                            <button className="tool-btn" title="Ordered List" onClick={() => execCommand('insertOrderedList')}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="10" y1="6" x2="21" y2="6"></line><line x1="10" y1="12" x2="21" y2="12"></line><line x1="10" y1="18" x2="21" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+                            </button>
+                        </div>
+
+                        <div className="divider"></div>
+
+                        {/* Media / Extra */}
+                        <div className="toolbar-group">
+                            <button className="tool-btn" title="Insert Link" onClick={() => {
+                                const url = prompt('Enter URL');
+                                if (url) execCommand('createLink', url);
+                            }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            </button>
+                            <button className="tool-btn" title="Upload Image/File" onClick={() => fileInputRef.current.click()}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            </button>
+                            <button className="tool-btn" title="AI Magic (Coming Soon)" style={{ opacity: 0.7 }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Editor Input */}
+                    <div
+                        className="editor-content"
+                        contentEditable
+                        ref={editorRef}
+                        onInput={handleInput}
+                        placeholder="Start writing your secure report..."
                     />
                 </div>
 
-                {/* Editor */}
-                <div
-                    className="glass-panel editor-container"
-                    contentEditable
-                    ref={editorRef}
-                    onInput={handleInput}
-                    placeholder="Start typing your report here..."
-                    style={{ minHeight: '300px', padding: '1.5rem' }}
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    style={{ display: 'none' }}
+                    accept="image/*,application/pdf"
+                    multiple
                 />
 
                 {/* Attachments Section */}
@@ -430,6 +559,45 @@ const ReportEditor = () => {
                 )}
 
             </div>
+            {/* Submit Confirmation Modal */}
+            {showSubmitModal && (
+                <div className="wallet-modal-overlay" onClick={() => setShowSubmitModal(false)}>
+                    <div className="wallet-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', background: 'var(--bg-color)', border: '1px solid var(--glass-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🧅</div>
+                            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Confirm Secure Submission</h3>
+                        </div>
+
+                        <p style={{
+                            color: 'var(--text-secondary)',
+                            lineHeight: '1.6',
+                            textAlign: 'center',
+                            marginBottom: '2rem',
+                            padding: '0 1rem'
+                        }}>
+                            For maximum security, please ensure you are using the Tor network or a trusted VPN.
+                            This hides your IP address from your ISP and prevents source tracing, ensuring your submission remains truly anonymous.
+                        </p>
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                            <button
+                                className="btn btn-outline"
+                                onClick={() => setShowSubmitModal(false)}
+                                style={{ flex: 1 }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={executeSubmit}
+                                style={{ flex: 1, background: 'linear-gradient(90deg, #38bdf8, #818cf8)' }}
+                            >
+                                Confirm Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

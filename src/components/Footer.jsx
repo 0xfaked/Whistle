@@ -53,15 +53,7 @@ const Footer = () => {
                     </div>
                 </div>
 
-                <div className="footer-bottom">
-                    <div className="social-links" style={{ justifyContent: 'center' }}>
-                        <a href="#" className="social-link" title="Twitter">𝕏</a>
-                        <a href="#" className="social-link" title="GitHub">🐙</a>
-                        <a href="#" className="social-link" title="Discord">💬</a>
-                        <a href="#" className="social-link" title="Tor Onion">🧅</a>
-                    </div>
 
-                </div>
             </div>
         </footer>
     );

@@ -1,0 +1,38 @@
+/* Shared styles for both Link (a) and Button (for Donate) navigation items */
+.nav-links a:not(.btn),
+.nav-links .nav-link-item {
+    position: relative;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+
+    /* Button reset styles */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0;
+}
+
+.nav-links a:not(.btn):hover,
+.nav-links .nav-link-item:hover {
+    color: var(--text-primary);
+}
+
+.nav-links a:not(.btn)::after,
+.nav-links .nav-link-item::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:not(.btn):hover::after,
+.nav-links .nav-link-item:hover::after {
+    width: 100%;
+}

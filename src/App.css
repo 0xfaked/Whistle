@@ -49,18 +49,27 @@
   align-items: center;
 }
 
-.nav-links a:not(.btn) {
+.nav-links a:not(.btn),
+.nav-links .nav-link-item {
   position: relative;
   font-weight: 500;
   color: var(--text-secondary);
   transition: color 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0;
 }
 
-.nav-links a:not(.btn):hover {
+.nav-links a:not(.btn):hover,
+.nav-links .nav-link-item:hover {
   color: var(--text-primary);
 }
 
-.nav-links a:not(.btn)::after {
+.nav-links a:not(.btn)::after,
+.nav-links .nav-link-item::after {
   content: '';
   position: absolute;
   width: 0;
@@ -71,7 +80,8 @@
   transition: width 0.3s ease;
 }
 
-.nav-links a:not(.btn):hover::after {
+.nav-links a:not(.btn):hover::after,
+.nav-links .nav-link-item:hover::after {
   width: 100%;
 }
 
@@ -278,7 +288,7 @@ footer {
 }
 
 .wallet-modal {
-  background: #1e293b;
+  background: var(--bg-color);
   border: 1px solid var(--glass-border);
   border-radius: 1rem;
   width: 90%;
@@ -309,7 +319,7 @@ footer {
   width: 100%;
   padding: 1rem;
   margin-bottom: 0.75rem;
-  background: rgba(30, 41, 59, 0.5);
+  background: var(--surface-color);
   border: 1px solid var(--glass-border);
   border-radius: 0.75rem;
   color: var(--text-primary);

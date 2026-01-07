@@ -65,16 +65,7 @@ const ReportsFeed = () => {
                     }
                 }
 
-                // 2. Merge/Fallback to Local Storage (for speed or manual mocks)
-                const localData = localStorage.getItem('whistle_global_reports');
-                const localReports = localData ? JSON.parse(localData) : [];
-
-                // Deduplicate: If ID (CID) exists in Chain, prefer Chain (or merge votes if we had better logic)
-                // For now, simple concat with unique IDs
-                const chainIds = new Set(fetchedReports.map(r => r.id));
-                const uniqueLocal = localReports.filter(r => !chainIds.has(r.id));
-
-                setReports([...fetchedReports, ...uniqueLocal]);
+                setReports(fetchedReports);
             } catch (e) {
                 console.error("Failed to load reports", e);
             } finally {

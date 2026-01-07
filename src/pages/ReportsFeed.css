@@ -150,7 +150,7 @@
 
 .btn-read-more {
     background: var(--primary-color);
-    color: #0f172a;
+    color: var(--bg-color);
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
@@ -176,7 +176,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(15, 23, 42, 0.6);
+    background: transparent;
     padding: 0.25rem 0.5rem;
     border-radius: 2rem;
     border: 1px solid var(--glass-border);
